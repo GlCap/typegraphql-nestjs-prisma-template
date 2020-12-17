@@ -1,0 +1,46 @@
+datasource db {
+    url      = env("DATABASE_URL")
+    provider = "postgresql"
+}
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+generator typegraphql {
+    provider = "typegraphql-prisma"
+    output   = "../prisma/generated/type-graphql"
+}
+
+model User {
+    id          String   @id @default(uuid())
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @default(now()) @updatedAt
+    email       String   @unique
+    displayName String
+    firstName   String?
+    lastName    String?
+    posts       Post[]
+    upvotes     Upvote[]
+}
+
+model Post {
+    id        String   @id @default(uuid())
+    createdAt DateTime @default(now())
+    updatedAt DateTime @default(now()) @updatedAt
+    editor    User?    @relation(fields: [userId], references: [id])
+    parent    Post?    @relation("PostToPost", fields: [postId], references: [id])
+    replies   Post[]   @relation("PostToPost")
+    upvotes   Upvote[]
+    userId    String?
+    postId    String?
+}
+
+model Upvote {
+    id        String   @id @default(uuid())
+    createdAt DateTime @default(now())
+    updatedAt DateTime @default(now()) @updatedAt
+    userId    String
+    upvoter   User     @relation(fields: [userId], references: [id])
+    post      Post[]
+}
